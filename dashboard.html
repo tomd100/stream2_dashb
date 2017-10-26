@@ -59,7 +59,7 @@
         var gender_measure = gender_dim.group().reduceSum(dc.pluck('salary'));
         
         dc.barChart("#per-gender-chart")
-            .width(300)
+            .width(500)
             .height(300)
             .margins({top: 10, right: 50, bottom: 30, left: 100})
             .dimension(gender_dim)
@@ -72,7 +72,7 @@
             
 
         dc.barChart("#per-gender-chart2")
-            .width(300)
+            .width(500)
             .height(300)
             .margins({top: 10, right: 50, bottom: 30, left: 100})
             .dimension(gender_dim)
