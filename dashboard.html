@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Dashboard Example</title>
+    
+    
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.8/dc.min.css"/>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.8/dc.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
+
+</head>
+<body>
+<!--*************************************************************************-->
+<section>
+    <div class="container">
+    
+        <h1>Dashboard Example</h1>
+    
+        <div class="row">
+            
+            <div class="col-md-6" style="padding: 20px; text-align: center">
+                <h2>By Gender</h2>
+                <h3>Chart</h3>
+                <div id="per-gender-chart"></div>
+            </div>
+            
+            <div class="col-md-6" style="padding: 20px; text-align: center">
+                <h2>By Gender</h2>
+                <h3>Chart</h3>
+                <div id="per-gender-chart2"></div>
+            </div>
+            
+        </div>
+
+    </div>
+</section>
+<!--*************************************************************************-->
+
+    <script>
+    
+    queue()
+        .defer(d3.csv, "data/salaries.csv")
+        .await(makeGraphs);
+    
+    function makeGraphs(error, salariesData) {
+        var ndx = crossfilter(salariesData);
+
+// -----------------------------------------------------------------------------
+
+        var gender_dim = ndx.dimension(dc.pluck('sex'));
+        var gender_measure = gender_dim.group().reduceSum(dc.pluck('salary'));
+        
+        dc.barChart("#per-gender-chart")
+            .width(300)
+            .height(300)
+            .margins({top: 10, right: 50, bottom: 30, left: 100})
+            .dimension(gender_dim)
+            .group(gender_measure)
+            .transitionDuration(500)
+            .x(d3.scale.ordinal())
+            .xUnits(dc.units.ordinal)
+            .xAxisLabel("x-axis")
+            .yAxis().ticks(4);
+            
+
+        dc.barChart("#per-gender-chart2")
+            .width(300)
+            .height(300)
+            .margins({top: 10, right: 50, bottom: 30, left: 100})
+            .dimension(gender_dim)
+            .group(gender_measure)
+            .transitionDuration(500)
+            .x(d3.scale.ordinal())
+            .xUnits(dc.units.ordinal)
+            .xAxisLabel("x-axis")
+            .yAxis().ticks(4);
+
+// -----------------------------------------------------------------------------
+
+        dc.renderAll();
+    };
+    </script>
+<!--*************************************************************************-->
+
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    
+</body>
+</html>
