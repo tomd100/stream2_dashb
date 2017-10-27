@@ -20,29 +20,35 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.8/dc.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
 
+<section>
+    <div class="container md-col-12">
+        <div class="row" style="padding: 40px">
+            <h1>Dashboard Example</h1>
+        </div>
+    </div>
+</section>
+
 </head>
 <body>
 <!--*************************************************************************-->
 <section>
     <div class="container-fluid">
     
-        <h1>Dashboard Example</h1>
-    
-        <div class="row">
+        <div class="col-lg-12">
             
-            <div class="col-lg-offset-1 col-lg-3" style="padding: 30px">
+            <div class="col-lg-offset-2 col-lg-3" style="padding: 20px">
                 <!--<h4>By Gender</h4>-->
                 <h6>Men outnumber women by 10 to 1</h6>
                 <div id="per-gender-count"></div>
             </div>
             
-            <div class="col-lg-3" style="padding: 30px">
+            <div class="col-lg-3" style="padding: 20px">
                 <!--<h4>By Gender</h4>-->
                 <h6>Men earn on average about 15% more than women</h6>
                 <div id="per-salry-avg"></div>
             </div>
             
-            <div class="col-lg-3" style="padding: 30px">
+            <div class="col-lg-4" style="padding: 20px">
                 <!--<h4>By Gender</h4>-->
                 <h6>Third Chart</h6>
                 <div id="per-rank-dist"></div>
@@ -61,7 +67,10 @@
         .await(makeGraphs);
     
     function makeGraphs(error, salariesData) {
-        var ndx = crossfilter(salariesData);
+
+        var ndx = crossfilter(salariesData);        
+
+
 
 // -----------------------------------------------------------------------------
 
@@ -113,42 +122,69 @@
             .x(d3.scale.ordinal())
             .xUnits(dc.units.ordinal)
             .xAxisLabel("Gender")
-            .yAxisLabel("Salary")
+            .yAxisLabel("Average Salary")
             .yAxis().ticks(4)
 
 // -----------------------------------------------------------------------------
-        var rank_dist_dim = ndx.dimension(dc.pluck('sex'));
-        var count_rank_dist_measure = rank_dist_dim.group().reduce(reducePctAdd, reducePctRemove, reducePctInit);
 
-        function reducePctAdd(p, v) {
-          ++p.count;
-          p.total += parseInt(v.salary);
-          return p;
-        }
+        salariesData.forEach(function(d){
+          d.prof = 0;
+          d.assoc_prof = 0;
+          d.asst_prof = 0;
+          d.not_defined = 0;
+          d.total = 0;
+          
+          if (d.rank == "Prof") {
+            d.prof = 1;
+            } 
+          if (d.rank == "AssocProf") {
+            d.assoc_prof = 1;
+            }
+          if (d.rank == "AsstProf") {
+            d.asst_prof = 1;
+            } 
+        });
         
-        function reducePctRemove(p, v) {
-          --p.count;
-          p.total -= parseInt(v.salary);
-          return p;
-        }
+        var xDim = ndx.dimension(function (d) { return d.sex; });
         
-        function reducePctInit() {
-          return {count: 0, total: 0};
-        }
+        var profGroup = xDim.group().reduceSum(function (d) { return d.prof; });
+        var assocGroup = xDim.group().reduceSum(function (d) { return d.assoc_prof; });
+        var assistGroup = xDim.group().reduceSum(function (d) { return d.asst_prof; });
 
+        var totalsGroup = xDim.group().all();
+        
+        totals = {
+            'Female': totalsGroup[0].value,
+            'Male' : totalsGroup[1].value
+        }    
+        console.log(profGroup.all());
+        
+        // var stackedBarChart = dc.barChart("#chart");
+        
+        var stackedBarChart = dc.barChart("#per-rank-dist");
 
-        dc.barChart("#per-rank-dist")
+        stackedBarChart
             .width(350)
             .height(300)
-            .margins({top: 30, right: 50, bottom: 40, left: 40})
-            .dimension(rank_dist_dim)
-            .group(count_rank_dist_measure)
+            .margins({top: 30, right: 70, bottom: 40, left: 40})
+            .dimension(xDim)
+            .group(assistGroup, "% Assist.")
             .transitionDuration(500)
             .x(d3.scale.ordinal())
             .xUnits(dc.units.ordinal)
+            .valueAccessor(function(d) {
+                return d.value / totals[d.key]
+            })
+            .stack(assocGroup, "% Assoc.")
+            .stack(profGroup, "% Prof.")
+            // .legend(dc.legendText(function(d) {return d.data + ': ' + d.value;}))
+            .legend(dc.legend().x(290).y(20).itemHeight(15).gap(5))
             .xAxisLabel("Gender")
             .yAxisLabel("Number")
-            .yAxis().ticks(10)
+            .yAxis().ticks(10).tickFormat(function(d) {
+                return d * 100;
+            })
+            ;
 
 
 // -----------------------------------------------------------------------------

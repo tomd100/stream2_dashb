@@ -80,6 +80,7 @@
             .xAxisLabel("Gender")
             .yAxisLabel("Number")
             .yAxis().ticks(20)
+            .legend(dc.legend().x(0).y(0).gap(5).legendText(function(d) {return d.name + ': ' + d.data;}));
 
 // -----------------------------------------------------------------------------
         var rank_gender_dim = ndx.dimension(dc.pluck('sex'));
@@ -117,6 +118,26 @@
             .yAxis().ticks(4)
 
 // -----------------------------------------------------------------------------
+
+
+            // var cf = crossfilter(data);
+            
+            // var histDimension = cf.dimension(function(d) {
+            //   return Math.floor(d.sex / binWidth) * binWidth;
+            // });
+            
+            // var totCounter = histDimension.groupAll();
+            // var histGroup = histDimension.group(); // default reduceCount
+            
+            // barChart
+            //     .valueAccessor(function(kv) {
+            //         var total = totCounter.value();
+            //         // return total && (kv.value / (binWidth * total));
+            //         return kv.value / (binWidth * (totCounter.value() + 0.01));
+            // })
+
+
+
         var rank_dist_dim = ndx.dimension(dc.pluck('sex'));
         var count_rank_dist_measure = rank_dist_dim.group().reduce(reducePctAdd, reducePctRemove, reducePctInit);
 
